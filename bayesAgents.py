@@ -61,6 +61,7 @@ ENTER_LEFT = 0
 ENTER_RIGHT = 1
 EXPLORE = 2
 
+
 def constructBayesNet(gameState):
     """
     Question 1: Bayes net structure
@@ -91,14 +92,34 @@ def constructBayesNet(gameState):
       of possible assignments to `var`. These should again be set using the
       constants defined at the top of this file.
     """
-
     obsVars = []
     edges = []
     variableDomainsDict = {}
 
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    "*** END YOUR CODE HERE ***"
+    # initialisation des variables d'observations selon le commentaire ci-dessus
+    for t_housePos in gameState.getPossibleHouses():
+        for t_wallPos in gameState.getHouseWalls(t_housePos):
+            obsVar = OBS_VAR_TEMPLATE % t_wallPos
+            obsVars.append(obsVar)
+
+    # ajouter les arcs du réseaux à la liste sous forme de tuples
+    edges.append((X_POS_VAR, FOOD_HOUSE_VAR))
+    edges.append((Y_POS_VAR, FOOD_HOUSE_VAR))
+
+    edges.append((X_POS_VAR, GHOST_HOUSE_VAR))
+    edges.append((Y_POS_VAR, GHOST_HOUSE_VAR))
+
+    for obsVar in obsVars:
+        edges.append((FOOD_HOUSE_VAR, obsVar))
+        edges.append((GHOST_HOUSE_VAR, obsVar))
+
+    # peupler les domaines des variables en ajoutant les paires clé-valeur
+    variableDomainsDict[X_POS_VAR], variableDomainsDict[Y_POS_VAR] = X_POS_VALS, Y_POS_VALS
+
+    for s_houseKey in HOUSE_VARS:
+        variableDomainsDict[s_houseKey] = HOUSE_VALS
+    for obsVar in obsVars:
+        variableDomainsDict[obsVar] = OBS_VALS
 
     variables = [X_POS_VAR, Y_POS_VAR] + HOUSE_VARS + obsVars
     net = bn.constructEmptyBayesNet(variables, edges, variableDomainsDict)
@@ -128,9 +149,15 @@ def fillYCPT(bayesNet, gameState):
     """
 
     yFactor = bn.Factor([Y_POS_VAR], [], bayesNet.variableDomainsDict())
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    "*** END YOUR CODE HERE ***"
+
+    # selon le docstring de la fct 'setProbability';
+    # le 1e paramètre doit être un dict de la forme "{variable : variableValue}'
+    # attribue la probabilité correspondante à chaque dictionnaire
+    yFactor.setProbability({Y_POS_VAR: BOTH_TOP_VAL}, PROB_BOTH_TOP)
+    yFactor.setProbability({Y_POS_VAR: BOTH_BOTTOM_VAL}, PROB_BOTH_BOTTOM)
+    yFactor.setProbability({Y_POS_VAR: LEFT_TOP_VAL}, PROB_ONLY_LEFT_TOP)
+    yFactor.setProbability({Y_POS_VAR: LEFT_BOTTOM_VAL}, PROB_ONLY_LEFT_BOTTOM)
+
     bayesNet.setCPT(Y_POS_VAR, yFactor)
 
 def fillHouseCPT(bayesNet, gameState):

@@ -17,8 +17,8 @@ import operator as op
 import util
 import functools
 
-def joinFactorsByVariableWithCallTracking(callTrackingList=None):
 
+def joinFactorsByVariableWithCallTracking(callTrackingList=None):
 
     def joinFactorsByVariable(factors, joinVariable):
         """
@@ -102,7 +102,34 @@ def joinFactors(factors):
 
 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    s_cond_var, s_uncond_var = set(), set()
+
+    for f_factor in factors:
+        s_cond_var.update(f_factor.conditionedVariables())
+        s_uncond_var.update(f_factor.unconditionedVariables())
+
+    d_domainVar = dict() if factors else list(factors)[0].variableDomainsDict()
+
+    if factors:
+        d_domainVar = list(factors)[0].variableDomainsDict()
+
+    # pour toute variables étants passées de non ocnditionnée à conditionnées, efface les
+    for s_var in s_uncond_var:
+        if s_var in s_cond_var:
+            s_cond_var.remove(s_var)
+
+    f_jointFactor = Factor(s_uncond_var, s_cond_var, d_domainVar)
+
+    for d_assignment in f_jointFactor.getAllPossibleAssignmentDicts():
+        i_prob = 1.0
+        for factor in factors:
+            i_prob = i_prob * factor.getProbability(d_assignment)
+        f_jointFactor.setProbability(d_assignment, i_prob)
+
+    return f_jointFactor
+
+
+
     "*** END YOUR CODE HERE ***"
 
 
