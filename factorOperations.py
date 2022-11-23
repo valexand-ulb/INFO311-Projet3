@@ -268,6 +268,7 @@ def normalize(factor):
 
     f_Factor = Factor(s_uncond_var, s_cond_var, d_domainVar)
 
+    # normalisation selon les slides du cours
     for d_assignement in f_Factor.getAllPossibleAssignmentDicts():
         i_prob = factor.getProbability(d_assignement)
         f_Factor.setProbability(d_assignement, i_prob/i_probSum)
