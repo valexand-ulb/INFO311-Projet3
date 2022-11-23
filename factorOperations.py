@@ -108,7 +108,7 @@ def joinFactors(factors):
         s_cond_var.update(f_factor.conditionedVariables())
         s_uncond_var.update(f_factor.unconditionedVariables())
 
-    d_domainVar = dict() if factors else list(factors)[0].variableDomainsDict()
+    d_domainVar = dict()
 
     if factors:
         d_domainVar = list(factors)[0].variableDomainsDict()
@@ -121,9 +121,9 @@ def joinFactors(factors):
     f_jointFactor = Factor(s_uncond_var, s_cond_var, d_domainVar)
 
     for d_assignment in f_jointFactor.getAllPossibleAssignmentDicts():
-        i_prob = 1.0
+        i_prob = 1
         for factor in factors:
-            i_prob = i_prob * factor.getProbability(d_assignment)
+            i_prob *= factor.getProbability(d_assignment)
         f_jointFactor.setProbability(d_assignment, i_prob)
 
     return f_jointFactor
@@ -178,11 +178,25 @@ def eliminateWithCallTracking(callTrackingList=None):
                     "eliminationVariable:" + str(eliminationVariable) + "\n" +\
                     "unconditionedVariables: " + str(factor.unconditionedVariables()))
 
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-        "*** END YOUR CODE HERE ***"
+        s_cond_var, s_uncond_var = factor.conditionedVariables(), factor.unconditionedVariables()
+        s_uncond_var.remove(eliminationVariable)
+        d_domainVar = factor.variableDomainsDict()
+
+        f_Factor = Factor(s_uncond_var, s_cond_var, d_domainVar)
+
+        for d_assignement in f_Factor.getAllPossibleAssignmentDicts():
+            l_toEliminate = d_domainVar[eliminationVariable]
+            i_prob = 0
+
+            for s_state in l_toEliminate:
+                d_assignement[eliminationVariable] = s_state
+                i_prob += factor.getProbability(d_assignement)
+
+            f_Factor.setProbability(d_assignement,i_prob)
+        return f_Factor
 
     return eliminate
+
 
 eliminate = eliminateWithCallTracking()
 
@@ -234,7 +248,30 @@ def normalize(factor):
                             "so that total probability will sum to 1\n" + 
                             str(factor))
 
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    "*** END YOUR CODE HERE ***"
+    s_cond_var, s_uncond_var = factor.conditionedVariables(), factor.unconditionedVariables()
+    d_domainVar = factor.variableDomainsDict()
+
+    i_probSum = 0
+    for d_assignement in factor.getAllPossibleAssignmentDicts():
+        i_probSum += factor.getProbability(d_assignement)
+
+    # si la somme des proba = 0 alors pose problème lors de la normalisation
+    if not i_probSum: return
+
+    for str_uncondVar in s_uncond_var:
+        if len(d_domainVar[str_uncondVar]) == 1:
+            s_cond_var.add(str_uncondVar)
+
+    for str_condVar in s_cond_var:
+        if str_condVar in s_uncond_var:
+            s_uncond_var.remove(str_condVar)
+
+    f_Factor = Factor(s_uncond_var, s_cond_var, d_domainVar)
+
+    for d_assignement in f_Factor.getAllPossibleAssignmentDicts():
+        i_prob = factor.getProbability(d_assignement)
+        f_Factor.setProbability(d_assignement, i_prob/i_probSum)
+
+    return f_Factor
+
 
