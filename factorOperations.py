@@ -100,8 +100,6 @@ def joinFactors(factors):
                     "Input factors: \n" +
                     "\n".join(map(str, factors)))
 
-
-    "*** YOUR CODE HERE ***"
     s_cond_var, s_uncond_var = set(), set()
 
     for f_factor in factors:
@@ -128,9 +126,6 @@ def joinFactors(factors):
 
     return f_jointFactor
 
-
-
-    "*** END YOUR CODE HERE ***"
 
 
 def eliminateWithCallTracking(callTrackingList=None):

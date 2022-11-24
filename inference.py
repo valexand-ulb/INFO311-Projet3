@@ -143,8 +143,6 @@ def inferenceByVariableEliminationWithCallTracking(callTrackingList=None):
         # Jointure normalisée selon les slides du cours
         return normalize(joinFactors(l_factList))
 
-
-
     return inferenceByVariableElimination
 
 inferenceByVariableElimination = inferenceByVariableEliminationWithCallTracking()

@@ -287,9 +287,17 @@ def getMostLikelyFoodHousePosition(evidence, bayesNet, eliminationOrder):
 
     (This should be a very short method.)
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    "*** END YOUR CODE HERE ***"
+    f_Factor = inference.inferenceByVariableElimination(bayesNet, FOOD_HOUSE_VAR, evidence, eliminationOrder)
+
+    i_bestProb , d_bestAssignement = 0, {}
+
+    for d_assignement in f_Factor.getAllPossibleAssignmentDicts():
+        i_prob = f_Factor.getProbability(d_assignement)
+
+        if (i_prob > i_bestProb):
+            i_bestProb, d_bestAssignement = i_prob, d_assignement
+
+    return d_bestAssignement[FOOD_HOUSE_VAR]
 
 
 class BayesAgent(game.Agent):
@@ -390,9 +398,23 @@ class VPIAgent(BayesAgent):
         leftExpectedValue = 0
         rightExpectedValue = 0
 
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-        "*** END YOUR CODE HERE ***"
+        f_Factor = inference.inferenceByVariableElimination(self.bayesNet, HOUSE_VARS, evidence, eliminationOrder)
+
+        i_leftHouseProb, i_rightHouseProb = 0, 0
+
+        s_leftVal, s_rightVal = {TOP_LEFT_VAL, BOTTOM_LEFT_VAL}, {TOP_RIGHT_VAL, BOTTOM_RIGHT_VAL}
+
+        for d_assignement in f_Factor.getAllPossibleAssignmentDicts():
+            # probabilité que la maison de gauche soit à nourriture et a droite fantome
+            if d_assignement[FOOD_HOUSE_VAR] in s_leftVal and d_assignement[GHOST_HOUSE_VAR] in s_rightVal:
+                i_leftHouseProb += f_Factor.getProbability(d_assignement)
+            # opposé de la condition ci dessus
+            elif d_assignement[FOOD_HOUSE_VAR] in s_rightVal and d_assignement[GHOST_HOUSE_VAR] in s_leftVal:
+                i_rightHouseProb += f_Factor.getProbability(d_assignement)
+
+        # score en pondéré en fonction le la probabilité de tomber sur une maison fantome ou nourriture
+        leftExpectedValue = i_leftHouseProb * WON_GAME_REWARD + i_rightHouseProb * GHOST_COLLISION_REWARD
+        rightExpectedValue = i_rightHouseProb * WON_GAME_REWARD + i_leftHouseProb * GHOST_COLLISION_REWARD
 
         return leftExpectedValue, rightExpectedValue
 
@@ -457,9 +479,11 @@ class VPIAgent(BayesAgent):
 
         expectedValue = 0
 
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-        "*** END YOUR CODE HERE ***"
+        # issu de la discussion avec un étudiant
+
+        l_Result = self.getExplorationProbsAndOutcomes(evidence)
+        for i_prob, d_obs in l_Result:
+            expectedValue += i_prob * max(self.computeEnterValues(d_obs, enterEliminationOrder))
 
         return expectedValue
 
